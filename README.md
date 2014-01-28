@@ -38,6 +38,16 @@ john.public@domain.com,johnpublic@domain.com,jpublic@domain.com,johnp@domain.com
 $ mix -d semicolon domain.com john public
 john.public@domain.com;johnpublic@domain.com;jpublic@domain.com;johnp@domain.com;publicjohn@domain.com;publicj@domain.com
 ```
+
+### Use with Mail
+1. Create variants with a comma (output results to clipboard):
+
+    ```bash
+    mix -o clipboard domain.com john public
+    ```
+
+2. Open Mail; create new Message; select BCC line; paste results
+
 ### Use with Microsoft Outlook for Mac 2011
 1. Create variants with a semicolon (output results to clipboard):
 

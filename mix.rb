@@ -3,6 +3,10 @@
 #
 # Author: Craig Buchanan
 #
+# Revions:
+#
+#   01/20/2014 - created
+#   02/05/2014 - added patterns; added '-m' option; ' OR ' delimiter
 
 require 'optparse'
 require 'ostruct'
@@ -10,7 +14,7 @@ require 'ostruct'
 class App
   
   VERSION = '0.1.0'
-  DELIMITERS = {:comma =>",", :semicolon=>";", :space=>" "}
+  DELIMITERS = {:comma =>",", :semicolon=>";", :space=>" ", :or=>" OR "}
   
   attr_reader :options, :parser
   
@@ -23,6 +27,7 @@ class App
     @options = OpenStruct.new
     @options.output = :console
     @options.delimiter = :comma
+    @options.middle_initial = false
     @options.verbose = false
 
     @parser = OptionParser.new do |opts|
@@ -32,13 +37,18 @@ class App
       opts.separator "Specific options:"
 
       # Optional argument with keyword completion.
-      opts.on("-d", "--delimiter [DELIMITER]", [:comma, :semicolon, :space], "Select delimiter (comma, semicolon, space)") do |d|
+      opts.on("-d", "--delimiter [DELIMITER]", [:comma, :semicolon, :space, :or], "Select delimiter (comma, semicolon, space, or)") do |d|
         options.delimiter = d
       end
 
       # Optional argument with keyword completion.
       opts.on("-o", "--output [OUTPUT]", [:clipboard, :console], "Select output (clipboard, console)") do |o|
         options.output = o
+      end
+
+      # Boolean switch.
+      opts.on("-m", "--middle-initial", "Force creation of middle-initial patterns using letters a through z") do |d|
+        options.middle_initial = true
       end
       
       # Boolean switch.
@@ -129,28 +139,39 @@ class App
       # patterns
       addresses = []
 
+      # first onlny
+      addresses << "#{fn}@#{d}"           # first@domain
+
       # first, last variations
-      addresses << "#{fn}.#{ln}@#{d}"  # first.last@domain
-      addresses << "#{fn}#{ln}@#{d}"  # firstlast@domain
-      addresses << "#{fn[0]}#{ln}@#{d}"  # flast@domain
-      addresses << "#{fn}#{ln[0]}@#{d}"  # firstl@domain
+      addresses << "#{fn}.#{ln}@#{d}"     # first.last@domain
+      addresses << "#{fn}#{ln}@#{d}"      # firstlast@domain
+      addresses << "#{fn[0]}#{ln}@#{d}"   # flast@domain
+      addresses << "#{fn}#{ln[0]}@#{d}"   # firstl@domain
       
       # last, first variations
-      addresses << "#{ln}#{fn}@#{d}"  # lastfirst@domain
-      addresses << "#{ln}#{fn[0]}@#{d}"  # lastf@domain
+      addresses << "#{ln}.#{fn}@#{d}"     # last.first@domain
+      addresses << "#{ln}#{fn}@#{d}"      # lastfirst@domain
+      addresses << "#{ln}#{fn[0]}@#{d}"   # lastf@domain
 
       if mn then
       
         # first, middle, last variations
-        addresses << "#{fn}.#{mn}.#{ln}@#{d}"  # first.middle.last@domain
-        addresses << "#{fn}#{mn}#{ln}@#{d}"  # firstmiddlelast@domain
-        addresses << "#{fn}.#{mn[0]}.#{ln}@#{d}"  # first.m.last@domain
-        addresses << "#{fn}#{mn[0]}#{ln}@#{d}"  # firstmlast@domain
-        addresses << "#{fn[0]}#{mn[0]}#{ln}@#{d}"  # fmlast@domain    
-        addresses << "#{fn}#{mn[0]}#{ln[0]}@#{d}"  # firstml@domain
+        addresses << "#{fn}.#{mn}.#{ln}@#{d}"       # first.middle.last@domain
+        addresses << "#{fn}#{mn}#{ln}@#{d}"         # firstmiddlelast@domain
+        addresses << "#{fn}.#{mn[0]}.#{ln}@#{d}"    # first.m.last@domain
+        addresses << "#{fn}#{mn[0]}#{ln}@#{d}"      # firstmlast@domain
+        addresses << "#{fn[0]}#{mn[0]}#{ln}@#{d}"   # fmlast@domain    
+        addresses << "#{fn}#{mn[0]}#{ln[0]}@#{d}"   # firstml@domain
       
         # last, first, middle variation
-        addresses << "#{ln}#{fn[0]}#{mn[0]}@#{d}"  # lastfm@domain
+        addresses << "#{ln}#{fn[0]}#{mn[0]}@#{d}"   # lastfm@domain
+      
+        # create 26 variations of first.middle.last
+      elsif (@options.middle_initial || !mn)
+        
+        ("a".."z").each{|letter| 
+          addresses << "#{fn}.#{letter}.#{ln}@#{d}"       # first.X.last@domain
+        }
         
       end
       

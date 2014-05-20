@@ -5,15 +5,16 @@
 #
 # Revions:
 #
-#   01/20/2014 - created
-#   02/05/2014 - added patterns; added '-m' option; ' OR ' delimiter
+#   2014/01/20 - created
+#   2014/02/05 - added patterns; added '-m' option; ' OR ' delimiter
+#   2014/05/19 - fixed error w/ '-m' option; added documentation; incremented version
 
 require 'optparse'
 require 'ostruct'
 
 class App
   
-  VERSION = '0.1.0'
+  VERSION = '0.1.1'
   DELIMITERS = {:comma =>",", :semicolon=>";", :space=>" ", :or=>" OR "}
   
   attr_reader :options, :parser
@@ -47,7 +48,7 @@ class App
       end
 
       # Boolean switch.
-      opts.on("-m", "--middle-initial", "Force creation of middle-initial patterns using letters a through z") do |d|
+      opts.on("-m", "--middle-initial", "Force creation of middle-initial patterns using letters a through z (if middle-initial not present)") do |d|
         options.middle_initial = true
       end
       
@@ -167,7 +168,7 @@ class App
         addresses << "#{ln}#{fn[0]}#{mn[0]}@#{d}"   # lastfm@domain
       
         # create 26 variations of first.middle.last
-      elsif (@options.middle_initial || !mn)
+      elsif (@options.middle_initial && !mn)
         
         ("a".."z").each{|letter| 
           addresses << "#{fn}.#{letter}.#{ln}@#{d}"       # first.X.last@domain
